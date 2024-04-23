@@ -1,49 +1,115 @@
-export const InputComponent = ({
-  type,
-  inputStyle,
+import React from "react";
+
+const InputComponent = ({
+  scenario,
+  inputType,
   inputTitle,
   required,
   disable,
   customChangeFunction,
   holder,
   labelStyle,
+  inputStyle,
   errorMessage,
   error,
   maxLength,
   minLength,
   options,
+  currency,
+  value,
 }) => {
-  if (type === "select") {
-    return (
-      <div style={{ margin: "15px" }}>
-        <label style={labelStyle}>{inputTitle}</label>
-        <select
-          style={inputStyle}
-          type={type}
-          required={required}
-          placeholder={holder}
-          disabled={disable}
-        >
-          {options.map((op) => (
-            <option>{op}</option>
-          ))}
-        </select>
-      </div>
-    );
-  }
+  const handleChange = (e) => {
+    if (customChangeFunction) {
+      customChangeFunction(e.target.value);
+    }
+  };
+
+  // Render different input types based on inputType prop
+  const renderInput = () => {
+    switch (inputType) {
+      case "text":
+      case "number":
+      case "password":
+        return (
+          <input
+            type={inputType}
+            value={value}
+            onChange={handleChange}
+            placeholder={holder}
+            style={inputStyle}
+            disabled={disable}
+          />
+        );
+      case "select":
+        return (
+          <select
+            value={value}
+            onChange={handleChange}
+            style={inputStyle}
+            disabled={disable}
+          >
+            {options.map((opt, index) => (
+              <option key={index} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        );
+      case "checkbox":
+        return (
+          <input
+            type="checkbox"
+            checked={value}
+            onChange={handleChange}
+            style={inputStyle}
+            disabled={disable}
+          />
+        );
+      case "radio":
+        return (
+          <div>
+            {options.map((opt, index) => (
+              <label key={index}>
+                <input
+                  type="radio"
+                  value={opt.value}
+                  checked={value === opt.value}
+                  onChange={handleChange}
+                  style={inputStyle}
+                  disabled={disable}
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        );
+      case "currency":
+        return (
+          <input
+            type="text"
+            value={currencyFormat(value)}
+            onChange={handleChange}
+            placeholder={holder}
+            style={inputStyle}
+            disabled={disable}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const currencyFormat = (value) => {
+    return `$${value.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,")}`;
+  };
+
   return (
-    <div style={{ margin: "15px" }}>
+    <div>
       <label style={labelStyle}>{inputTitle}</label>
-      <input
-        style={inputStyle}
-        type={type}
-        required={required}
-        placeholder={holder}
-        max={maxLength}
-        min={minLength}
-        disabled={disable}
-      />
-      <span>{errorMessage}</span>
+      {renderInput()}
+      {error && <span style={{ color: "red" }}>{errorMessage}</span>}
     </div>
   );
 };
+
+export default InputComponent;
